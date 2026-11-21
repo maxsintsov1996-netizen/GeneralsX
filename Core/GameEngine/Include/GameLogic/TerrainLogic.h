@@ -194,6 +194,9 @@ public:
 	Bool isPointOnBridge(const Coord3D *pLoc);
 	Drawable *pickBridge(const Vector3 &from, const Vector3 &to, Vector3 *pos);
 	void updateDamageState(); ///< Updates a bridge's damage info.
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	void clearScriptEvent() { m_bridgeInfo.damageStateChanged = false; }
+#endif
 	const BridgeInfo *peekBridgeInfo() const {return &m_bridgeInfo;}
 	PathfindLayerEnum getLayer() const {return m_layer;}
 	void setLayer(PathfindLayerEnum layer) {m_layer = layer;}
@@ -293,6 +296,9 @@ public:
 	virtual void deleteBridge( Bridge *bridge );	///< remove a bridge
 
 	virtual void updateBridgeDamageStates(); ///< Updates bridge's damage info.
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	void clearBridgeScriptEvents();
+#endif
 
 	Bool anyBridgesDamageStatesChanged() {return m_bridgeDamageStatesChanged; } ///< Bridge damage states updated.
 	Bool isBridgeRepaired(const Object *bridge); ///< Is bridge repaired?

@@ -74,7 +74,7 @@ MissileAIUpdateModuleData::MissileAIUpdateModuleData()
 	m_lockDistance = 75.0f;
 	m_distanceScatterWhenJammed = 75.0f;
     m_detonateCallsKill = FALSE;
-    m_killSelfDelay   = 3; // just long enough for the contrail to catch up to me
+    m_killSelfDelay   = logicFramesFromBaseFrames(3); // just long enough for the contrail to catch up to me
 }
 
 //-----------------------------------------------------------------------------
@@ -223,7 +223,8 @@ void MissileAIUpdate::projectileFireAtObjectOrPosition( const Object *victim, co
 		Locomotor* curLoco = getCurLocomotor();
 		if (curLoco)
 		{
-			m_maxAccel = weaponSpeed;
+			// GeneralsX @feature Codex 22/11/2026 Reach launch speed over the original acceleration interval.
+			m_maxAccel = logicRateFromBaseRate(weaponSpeed);
 			curLoco->setMaxSpeed(weaponSpeed);
 			curLoco->setMaxAcceleration(m_maxAccel);
 		}

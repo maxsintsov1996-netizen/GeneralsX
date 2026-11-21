@@ -214,6 +214,7 @@ void TensileFormationUpdate::initLinks()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
+// GeneralsX @feature Codex 22/11/2026 Advance the authored collapse physics once per retail time step.
 UpdateSleepTime TensileFormationUpdate::update()
 {
 
@@ -243,13 +244,13 @@ UpdateSleepTime TensileFormationUpdate::update()
 
 		}
 		else
-			return UPDATE_SLEEP(30);
+			return UPDATE_SLEEP(LOGICFRAMES_PER_SECOND);
 	}
 
 
 	Drawable *draw = getObject()->getDrawable();
 	if ( ! draw )
-		return UPDATE_SLEEP_NONE;
+		return UPDATE_SLEEP(logicFramesFromBaseFrames(1));
 
 	if (++m_life > 300)
 	{
@@ -373,7 +374,7 @@ UpdateSleepTime TensileFormationUpdate::update()
 
 
 
-	return UPDATE_SLEEP_NONE;
+	return UPDATE_SLEEP(logicFramesFromBaseFrames(1));
 }
 
 

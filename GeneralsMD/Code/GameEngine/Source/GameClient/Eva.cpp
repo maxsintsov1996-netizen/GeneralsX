@@ -199,8 +199,9 @@ const FieldParse EvaSideSounds::s_evaSideSounds[] =
 EvaCheckInfo::EvaCheckInfo() :
 	m_message(EVA_COUNT),
 	m_priority(1), // lowest of all priorities
-	m_framesBetweenChecks(900),	// 30 seconds at 30 fps
-	m_framesToExpire(150) // 5 seconds at 30 fps
+	// GeneralsX @feature Codex 22/11/2026 Keep voice notification windows in game seconds.
+	m_framesBetweenChecks(30 * LOGICFRAMES_PER_SECOND),
+	m_framesToExpire(5 * LOGICFRAMES_PER_SECOND)
 {
 
 

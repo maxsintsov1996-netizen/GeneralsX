@@ -72,7 +72,8 @@ StealthUpdateModuleData::StealthUpdateModuleData()
     m_stealthSpeed		= 0.0f;
     m_friendlyOpacityMin = 0.5f;
     m_friendlyOpacityMax = 1.0f;
-    m_pulseFrames = 30;
+    // GeneralsX @feature Codex 22/11/2026 Keep the default stealth pulse at one second.
+    m_pulseFrames = LOGICFRAMES_PER_SECOND;
     m_teamDisguised		= false;
     m_revealDistanceFromTarget = 0.0f;
     m_orderIdleEnemiesToAttackMeUponReveal = false;
@@ -295,7 +296,7 @@ Bool StealthUpdate::allowedToStealth( Object *stealthOwner ) const
 	if( flags & STEALTH_ONLY_WITH_BLACK_MARKET && m_nextBlackMarketCheckFrame < now )
 	{
 		//randomize timer a little incase we have a whole bunch on the same frame.
-		m_nextBlackMarketCheckFrame += data->m_blackMarketCheckFrames + GameLogicRandomValue( 0, 10 );
+		m_nextBlackMarketCheckFrame += data->m_blackMarketCheckFrames + logicFramesFromBaseFrames(GameLogicRandomValue(0, 10));
 
 		//If we can't find an active black market, then we can't stealth.
 		Bool blackMarket = FALSE;

@@ -1036,7 +1036,8 @@ void Locomotor::setPhysicsOptions(Object* obj)
 	}
 
 	// crank up the friction in ultra-accurate mode to increase movement precision.
-	const Real EXTRA_FRIC = 0.5f;
+	// GeneralsX @feature Codex 22/11/2026 Express friction and flight thresholds at the selected step size.
+	const Real EXTRA_FRIC = logicRateFromBaseRate(0.5f);
 	Real extraExtraFriction = getFlag(ULTRA_ACCURATE) ? EXTRA_FRIC : 0.0f;
 	physics->setExtraFriction(m_template->m_extra2DFriction + extraExtraFriction);
 	physics->setAllowAirborneFriction(getApply2DFrictionWhenAirborne());	// you'd think we wouldn't want friction in the air, but it's needed for realistic behavior.
@@ -1120,9 +1121,10 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 		heightAboveSurface -= obj->getCarrierDeckHeight();
 	}
 
-	if (heightAboveSurface > -(3*3)*TheGlobalData->m_gravity)
+	const Int airborneFrames = logicFramesFromBaseFrames(3);
+	if (heightAboveSurface > -(airborneFrames * airborneFrames) * TheGlobalData->m_gravity)
 	{
-		// If we get high enough to stay up for 3 frames, then we left the ground.
+		// If we get high enough to stay up for three retail frames, then we left the ground.
 		treatAsAirborne = true;
 	}
 	// We apply a zero acceleration to all units, as the call to
@@ -1447,8 +1449,9 @@ void Locomotor::moveTowardsPositionWheels(Object* obj, PhysicsBehavior *physics,
 
 
 
-	Real slowDownTime = actualSpeed / getBraking() + 1.0f;
-	Real slowDownDist = (actualSpeed/1.5f) * slowDownTime + actualSpeed;
+	const Real brakingLeadFrames = logicFramesFromBaseFrames(1);
+	Real slowDownTime = actualSpeed / getBraking() + brakingLeadFrames;
+	Real slowDownDist = (actualSpeed/1.5f) * slowDownTime + actualSpeed * brakingLeadFrames;
 	Real effectiveSlowDownDist = slowDownDist;
 	if (effectiveSlowDownDist < 1*PATHFIND_CELL_SIZE) {
 		effectiveSlowDownDist = 1*PATHFIND_CELL_SIZE;
@@ -2160,7 +2163,7 @@ Real Locomotor::calcLiftToUseAtPt(Object* obj, PhysicsBehavior *physics, Real cu
 		maxAccel = (curVelZ < 0) ? maxNetLift : TheGlobalData->m_gravity;
 	// see how far we need to slow to dead stop, given max braking
 	Real desiredAccel;
-	const Real TINY_ACCEL = 0.001f;
+	const Real TINY_ACCEL = logicAccelerationFromBaseAcceleration(0.001f);
 	if (WWMath::Fabs(maxAccel) > TINY_ACCEL)
 	{
 		Real deltaZ = preferredHeight - curZ;

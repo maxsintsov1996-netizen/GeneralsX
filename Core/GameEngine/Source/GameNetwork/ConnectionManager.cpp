@@ -386,14 +386,10 @@ void ConnectionManager::reset()
 #endif
 	m_packetRouterSlot = -1;
 
-	for (i = 0; i < TheGlobalData->m_networkFPSHistoryLength; ++i) {
-		m_fpsAverages[i] = -1;
-	}
-	for (i = 0; i < TheGlobalData->m_networkLatencyHistoryLength; ++i) {
-		m_latencyAverages[i] = 0.0;
-	}
-
+	// GeneralsX @bugfix Codex 22/11/2026 Reset per-player metrics using the slot count when starting another match.
 	for (i = 0; i < (UnsignedInt)MAX_SLOTS; ++i) {
+		m_fpsAverages[i] = -1;
+		m_latencyAverages[i] = 0.0;
 		m_packetRouterFallback[i] = -1;
 	}
 
@@ -1381,7 +1377,7 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 				minFps = frameRate;
 			}
 
-			// GeneralsX @bugfix Codex 21/11/2026 Keep network logic at game speed when clients render above 30 FPS.
+			// GeneralsX @bugfix Codex 21/11/2026 Keep network logic at game speed when clients render faster than the simulation.
 			const Int renderLimit = TheGlobalData->m_framesPerSecondLimit;
 			const Int maxNetworkFps = renderLimit > 0
 				? clamp<Int>(MIN_LOGIC_FRAMES, renderLimit, LOGICFRAMES_PER_SECOND)

@@ -64,10 +64,15 @@ class NGMPGame;
 extern NGMPGame* TheNGMPGame;
 #endif
 
+// GeneralsX @feature Codex 22/11/2026 A replay indexes commands by simulation tick; reject recordings from another clock at the header.
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+constexpr const char s_genrep[] = "GX60RP";
+#else
 constexpr const char s_genrep[] = "GENREP";
+#endif
 constexpr const UnsignedInt replayBufferBytes = 8192;
 
-Int REPLAY_CRC_INTERVAL = 100;
+Int REPLAY_CRC_INTERVAL = logicFramesFromBaseFrames(100);
 
 const char *replayExtention = ".rep";
 const char *lastReplayFileName = "00000000";	// a name the user is unlikely to ever type, but won't cause panic & confusion
@@ -888,11 +893,11 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header, const AsciiString& fi
 		return FALSE;
 	}
 
-	// Read the GENREP header.
+	// Read the replay signature for this simulation rate.
 	char genrep[sizeof(s_genrep) - 1] = {0};
 	m_file->read( &genrep, sizeof(s_genrep) - 1 );
 	if ( strncmp(genrep, s_genrep, sizeof(s_genrep) - 1 ) != 0 ) {
-		DEBUG_LOG(("RecorderClass::readReplayHeader - replay file did not have GENREP at the start."));
+		DEBUG_LOG(("RecorderClass::readReplayHeader - replay signature does not match this simulation rate."));
 		m_file->close();
 		m_file = nullptr;
 		return FALSE;
@@ -1720,10 +1725,14 @@ AsciiString RecorderClass::getReplayDir()
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
 	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so replay files are stored in the actual Replays directory.
+	tmp.concat("Replays");
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+	tmp.concat("60Hz");
+#endif
 #ifdef _WIN32
-	tmp.concat("Replays\\");
+	tmp.concat('\\');
 #else
-	tmp.concat("Replays/");
+	tmp.concat('/');
 #endif
 	return tmp;
 }
@@ -1756,10 +1765,14 @@ AsciiString RecorderClass::getReplayArchiveDir()
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
 	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so archived replays are stored in the actual directory.
+	tmp.concat("ArchivedReplays");
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+	tmp.concat("60Hz");
+#endif
 #ifdef _WIN32
-	tmp.concat("ArchivedReplays\\");
+	tmp.concat('\\');
 #else
-	tmp.concat("ArchivedReplays/");
+	tmp.concat('/');
 #endif
 	return tmp;
 }

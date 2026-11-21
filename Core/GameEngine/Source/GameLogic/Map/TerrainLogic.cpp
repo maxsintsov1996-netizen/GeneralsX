@@ -835,7 +835,9 @@ Drawable *Bridge::pickBridge(const Vector3 &from, const Vector3 &to, Vector3 *po
 //-------------------------------------------------------------------------------------------------
 void Bridge::updateDamageState()
 {
+#if !defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
 	m_bridgeInfo.damageStateChanged = false;
+#endif
 	if (m_bridgeInfo.bridgeObjectID==0) return;
 	Object *bridge = TheGameLogic->findObjectByID(m_bridgeInfo.bridgeObjectID);
 	if (bridge) {
@@ -985,7 +987,9 @@ void TerrainLogic::update()
 {
 
 	// bridge damage states have not changed this frame now
+#if !defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
 	m_bridgeDamageStatesChanged = false;
+#endif
 
 	// update any water tables that we need to
 	if( m_numWaterToUpdate )
@@ -1809,6 +1813,18 @@ Bool TerrainLogic::objectInteractsWithBridgeEnd(Object *obj, Int layer) const
 //-------------------------------------------------------------------------------------------------
 /** Updates the damage state of the bridge from the logic. */
 //-------------------------------------------------------------------------------------------------
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+// GeneralsX @feature Codex 22/11/2026 Retain transient bridge notifications between WorldBuilder script updates.
+void TerrainLogic::clearBridgeScriptEvents()
+{
+	if (!m_bridgeDamageStatesChanged)
+		return;
+	for (Bridge *bridge = getFirstBridge(); bridge; bridge = bridge->getNext())
+		bridge->clearScriptEvent();
+	m_bridgeDamageStatesChanged = false;
+}
+#endif
+
 void TerrainLogic::updateBridgeDamageStates()
 {
 	Bridge *pBridge = getFirstBridge();

@@ -10,6 +10,7 @@ option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 option(RTS_BUILD_OPTION_DEEP_CRC "Enable deep CRC snapshots on sync mismatch" ON)
+option(RTS_EXPERIMENTAL_60HZ_SIMULATION "Build the separate 60 Hz simulation profile" OFF)
 
 # Linux/macOS audio and windowing options
 option(SAGE_USE_SDL3 "Use SDL3 for windowing/input (Linux/macOS)" OFF)
@@ -182,6 +183,10 @@ endif()
 if(RTS_BUILD_OPTION_DEEP_CRC)
     target_compile_definitions(core_config INTERFACE DEEP_CRC_TO_MEMORY=1)
     message(STATUS "Deep CRC logging on sync mismatch enabled")
+endif()
+
+if(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+    target_compile_definitions(core_config INTERFACE RTS_EXPERIMENTAL_60HZ_SIMULATION=1)
 endif()
 
 # macOS MoltenVK detection (Phase 5)

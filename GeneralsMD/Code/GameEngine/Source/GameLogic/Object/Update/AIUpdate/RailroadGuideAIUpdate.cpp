@@ -91,7 +91,8 @@ RailroadBehaviorModuleData::RailroadBehaviorModuleData()
 	m_acceleration = 1.01f;
 	m_braking = 0.99f;
 	m_friction = 0.97f;
-	m_waitAtStationTime = 150;
+	// GeneralsX @feature Codex 22/11/2026 Preserve the default station stop in seconds.
+	m_waitAtStationTime = logicFramesFromBaseFrames(150);
 }
 
 

@@ -58,7 +58,7 @@ FireOCLAfterWeaponCooldownUpdateModuleData::FireOCLAfterWeaponCooldownUpdateModu
 	m_weaponSlot						= PRIMARY_WEAPON;
 	m_minShotsRequired			= 1;
 	m_oclLifetimePerSecond	= 1000;
-	m_oclMaxFrames					= 1000;
+	m_oclMaxFrames					= logicFramesFromBaseFrames(1000);
 	m_ocl										= nullptr;
 }
 

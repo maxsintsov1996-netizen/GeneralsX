@@ -96,7 +96,8 @@ public:
 		m_stealthSpeed		= 0.0f;
 		m_friendlyOpacityMin = 0.5f;
 		m_friendlyOpacityMax = 1.0f;
-		m_pulseFrames = 30;
+		// GeneralsX @feature Codex 22/11/2026 Keep the default stealth pulse at one second.
+		m_pulseFrames = LOGICFRAMES_PER_SECOND;
 		m_teamDisguised		= false;
 		m_revealDistanceFromTarget = 0.0f;
 		m_orderIdleEnemiesToAttackMeUponReveal = false;

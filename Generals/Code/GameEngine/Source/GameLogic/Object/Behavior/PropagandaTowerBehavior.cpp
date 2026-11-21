@@ -79,7 +79,8 @@ PropagandaTowerBehaviorModuleData::PropagandaTowerBehaviorModuleData()
 {
 
 	m_scanRadius = 1.0f;
-	m_scanDelayInFrames = 100;
+	// GeneralsX @feature Codex 22/11/2026 Preserve scan cadence for towers without an explicit INI delay.
+	m_scanDelayInFrames = logicFramesFromBaseFrames(100);
 	m_autoHealPercentPerSecond = 0.01f;
 	m_upgradedAutoHealPercentPerSecond = 0.02f;
 	m_pulseFX = nullptr;

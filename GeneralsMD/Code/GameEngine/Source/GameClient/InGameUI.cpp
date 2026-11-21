@@ -4059,10 +4059,8 @@ void InGameUI::postDraw()
 				// found one - draw it
 				UnicodeString line;
 				Int framesLeft = TheScriptEngine->getCounter(timerName)->value;
-				UnsignedInt readyFrame = TheGameLogic->getFrame();
-				if (framesLeft > 0)
-					readyFrame += framesLeft;
-				Int readySecs = (Int)(SECONDS_PER_LOGICFRAME_REAL * (readyFrame - TheGameLogic->getFrame()));
+				// GeneralsX @feature Codex 22/11/2026 WorldBuilder counters retain their authored frame units.
+				const Int readySecs = framesLeft > 0 ? (Int)((1.0f / BaseFps) * framesLeft) : 0;
 				if ( (info->isCountdown && readySecs != info->timestamp) || (!info->isCountdown && framesLeft != info->timestamp) )
 				{
 					if (!readySecs && info->isCountdown)

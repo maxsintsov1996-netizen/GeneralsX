@@ -103,6 +103,7 @@ public:
 		RET_GAME_GONE,			// OnGameJoin
 		RET_BUSY,						// OnGameCreate/Join/etc if another action is in progress
 		RET_UNKNOWN,				// Default message for oddity
+		RET_SIMULATION_MISMATCH,
 	};
 	UnicodeString getErrorStringFromReturnType( ReturnType ret );
 
@@ -180,7 +181,14 @@ struct LANMessage
 		MSG_INACTIVE,						///< I've alt-tabbed out.  Unaccept me cause I'm a poo-flinging monkey.
 
 		MSG_REQUEST_GAME_INFO,	///< For direct connect, get the game info from a specific IP Address
+		// GeneralsX @feature Codex 22/11/2026 Older hosts must never allocate a slot for a 60 Hz client.
+		MSG_REQUEST_JOIN_60HZ,
 	} messageType;
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+	static constexpr Type localJoinRequest = MSG_REQUEST_JOIN_60HZ;
+#else
+	static constexpr Type localJoinRequest = MSG_REQUEST_JOIN;
+#endif
 
 	WideCharWindows name[g_lanPlayerNameLength+1]; ///< My name, for convenience
 	char userName[g_lanLoginNameLength+1];	///< login name, for convenience
@@ -276,6 +284,20 @@ struct LANMessage
 		static_assert(ARRAY_SIZE(GameOptions.options) > m_lanMaxOptionsLength, "GameOptions.options buffer must be larger than m_lanMaxOptionsLength");
 
 	};
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+	// The legacy packet prefix remains intact so older clients can discover the host and receive a join denial.
+	static constexpr uint32_t native60Profile = 0x36304801; // 60 Hz simulation, revision 1
+	uint32_t simulationProfile;
+#endif
+	Bool matchesSimulationProfile(Int length) const
+	{
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+		return length == sizeof(*this) && simulationProfile == native60Profile;
+#else
+		// Preserve retail discovery compatibility; the host also validates the join opcode.
+		return true;
+#endif
+	}
 };
 #pragma pack(pop)
 
@@ -405,10 +427,10 @@ protected:
 
 	// Functions to handle incoming messages -----------------------------------
 	void handleRequestLocations( LANMessage *msg, UnsignedInt senderIP );
-	void handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP );
+	void handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP, Bool compatibleSimulation );
 	void handleLobbyAnnounce( LANMessage *msg, UnsignedInt senderIP );
 	void handleRequestGameInfo( LANMessage *msg, UnsignedInt senderIP );
-	void handleRequestJoin( LANMessage *msg, UnsignedInt senderIP );
+	void handleRequestJoin( LANMessage *msg, UnsignedInt senderIP, Bool compatibleSimulation );
 	void handleJoinAccept( LANMessage *msg, UnsignedInt senderIP );
 	void handleJoinDeny( LANMessage *msg, UnsignedInt senderIP );
 	void handleRequestGameLeave( LANMessage *msg, UnsignedInt senderIP );

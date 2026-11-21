@@ -640,7 +640,7 @@ void GameEngine::init()
 		// GeneralsX @bugfix Copilot 11/05/2026 Prevent uncapped render when FPS limiter is enabled but no valid limit value was loaded.
 		if (TheGlobalData->m_useFpsLimit && TheGlobalData->m_framesPerSecondLimit <= 0)
 		{
-			TheWritableGlobalData->m_framesPerSecondLimit = BaseFps;
+			TheWritableGlobalData->m_framesPerSecondLimit = LOGICFRAMES_PER_SECOND;
 		}
 
 		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);

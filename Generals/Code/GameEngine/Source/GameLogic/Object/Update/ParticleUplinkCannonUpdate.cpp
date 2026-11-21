@@ -82,7 +82,8 @@ ParticleUplinkCannonUpdateModuleData::ParticleUplinkCannonUpdateModuleData()
 	m_damageRadiusScalar						= 1.0f;
 	m_groundHitFX										= nullptr;
 	m_beamLaunchFX									= nullptr;
-	m_framesBetweenLaunchFXRefresh  = 30;
+	// GeneralsX @feature Codex 22/11/2026 Preserve defaults when the mod omits the duration overrides.
+	m_framesBetweenLaunchFXRefresh  = LOGICFRAMES_PER_SECOND;
 	m_totalDamagePulses							= 0;
 	m_damagePerSecond								= 0.0f;
 	m_damageType										= DAMAGE_LASER;
@@ -90,7 +91,7 @@ ParticleUplinkCannonUpdateModuleData::ParticleUplinkCannonUpdateModuleData()
 	m_revealRange										= 0.0f;
   m_manualDrivingSpeed						= 0.0f;
   m_manualFastDrivingSpeed				= 0.0f;
-  m_doubleClickToFastDriveDelay		= 500;
+  m_doubleClickToFastDriveDelay		= logicFramesFromBaseFrames(500);
 	m_swathOfDeathAmplitude					= 0.0f;
 	m_swathOfDeathDistance					=	0.0f;
 }

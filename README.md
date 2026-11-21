@@ -80,6 +80,18 @@ cmake --preset linux64-deploy
 cmake --build build/linux64-deploy --target z_generals
 ```
 
+### Experimental 60 Hz LAN simulation
+
+Add `-DRTS_EXPERIMENTAL_60HZ_SIMULATION=ON` to the CMake configure command
+and choose a separate build directory with `-B`. Build `z_generals` for
+Zero Hour and Contra X, or `g_generals` for Generals. A fresh configuration
+uses the standard 30 Hz simulation by default.
+
+All LAN players need the same 60 Hz game build and mod. Open **Multiplayer → Network**.
+Use a render limit of at least 60 FPS to sustain 60 simulation ticks per second.
+The packet router can slow the match when a peer falls behind. Play native replays
+with the 60 Hz executable and retail replays with the standard executable.
+
 For complete prerequisites, Docker workflows, and packaging guides, check the Wiki:
 - 📖 [Building on macOS Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-macOS)
 - 📖 [Building on Linux Guide](https://github.com/fbraz3/GeneralsX/wiki/Building-on-Linux)

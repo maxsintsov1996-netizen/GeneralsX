@@ -924,7 +924,8 @@ GlobalData::GlobalData()
 	m_unitReallyDamagedThresh = 0.1f;
 	m_groundStiffness = 0.5f;
 	m_structureStiffness = 0.5f;
-	m_gravity = -1.0f;
+	// GeneralsX @feature Codex 22/11/2026 Express fallback gravity in native simulation frames squared.
+	m_gravity = logicAccelerationFromBaseAcceleration(-1.0f);
 	m_stealthFriendlyOpacity = 0.5f;
 	m_defaultOcclusionDelay = LOGICFRAMES_PER_SECOND * 3;	//default to 3 seconds
 
@@ -1037,7 +1038,7 @@ GlobalData::GlobalData()
 
 	// By default, show all asserts.
 
-	m_unlookPersistDuration		= 30;
+	m_unlookPersistDuration		= LOGICFRAMES_PER_SECOND;
 
 	//-----------------------------------------------------------------------------------------------
 

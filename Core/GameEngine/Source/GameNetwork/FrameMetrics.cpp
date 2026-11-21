@@ -60,13 +60,14 @@ FrameMetrics::~FrameMetrics() {
 }
 
 void FrameMetrics::init() {
-	m_averageFps = 30;
+	// GeneralsX @feature Codex 22/11/2026 Seed the rolling history at the normal simulation rate.
+	m_averageFps = LOGICFRAMES_PER_SECOND;
 	m_averageLatency = (Real)0.2;
 	m_minimumCushion = -1;
 
 	UnsignedInt i = 0;
 	for (; i < TheGlobalData->m_networkFPSHistoryLength; ++i) {
-		m_fpsList[i] = 30.0;
+		m_fpsList[i] = m_averageFps;
 	}
 	m_fpsListIndex = 0;
 	for (i = 0; i < TheGlobalData->m_networkLatencyHistoryLength; ++i) {

@@ -430,6 +430,9 @@ protected:
 	ConditionTemplate	m_conditionTemplates[Condition::NUM_ITEMS];
 	TCounter					m_counters[MAX_COUNTERS];
 	Int								m_numCounters;
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	Bool m_countdownHalfTick = FALSE;
+#endif
 	TFlag							m_flags[MAX_FLAGS];
 	Int								m_numFlags;
 	AttackPriorityInfo m_attackPriorityInfo[MAX_ATTACK_PRIORITIES];

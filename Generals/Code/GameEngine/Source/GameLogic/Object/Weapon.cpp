@@ -69,6 +69,7 @@
 #include "GameLogic/ObjectCreationList.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/Weapon.h"
+#include "GameLogic/WeaponTiming.h"
 
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/AssistedTargetingUpdate.h"
@@ -2659,6 +2660,8 @@ WeaponStatus Weapon::getStatus() const
 	}
 	if( now >= m_whenWeCanFireAgain )
 	{
+		if (m_ammoInClip > 0 && weaponIsBetweenZeroDelayShots(now, m_lastFireFrame, m_whenWeCanFireAgain))
+			return BETWEEN_FIRING_SHOTS;
 		if (m_ammoInClip > 0)
 			m_status = READY_TO_FIRE;
 		else

@@ -472,8 +472,8 @@ NetCommandMsg::Select NetRunAheadMetricsCommandMsg::getSmallNetPacketSelect() co
 // NetRunAheadCommandMsg
 //-------------------------
 NetRunAheadCommandMsg::NetRunAheadCommandMsg() {
-	m_runAhead = min(max(20, MIN_RUNAHEAD), MAX_FRAMES_AHEAD/2);
-	m_frameRate = 30;
+	m_runAhead = clamp<Int>(MIN_RUNAHEAD, logicFramesFromBaseFrames(20), MAX_FRAMES_AHEAD / 2);
+	m_frameRate = LOGICFRAMES_PER_SECOND;
 	m_commandType = NETCOMMANDTYPE_RUNAHEAD;
 }
 

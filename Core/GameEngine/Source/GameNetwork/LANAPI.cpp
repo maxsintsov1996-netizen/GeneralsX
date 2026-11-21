@@ -293,6 +293,9 @@ AsciiString GetMessageTypeString(UnsignedInt type)
 		case LANMessage::MSG_LOBBY_ANNOUNCE:
 			returnString.format("Lobby Announce (%d)",type);
 			break;
+		case LANMessage::MSG_REQUEST_JOIN_60HZ:
+			returnString = "REQUEST_JOIN_60HZ";
+			break;
 		case LANMessage::MSG_REQUEST_JOIN:
 			returnString.format("Request Join (%d)",type);
 			break;
@@ -452,7 +455,7 @@ void LANAPI::update()
 				break;
 			case LANMessage::MSG_GAME_ANNOUNCE:				// Here someone is, and here's his game info!
 				DEBUG_LOG(("LANAPI::update - got a MSG_GAME_ANNOUNCE from %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(senderIP)));
-				handleGameAnnounce( msg, senderIP );
+				handleGameAnnounce(msg, senderIP, msg->matchesSimulationProfile(m_transport->m_inBuffer[i].length));
 				break;
 			case LANMessage::MSG_LOBBY_ANNOUNCE:			// Hey, I'm in the lobby!
 				DEBUG_LOG(("LANAPI::update - got a MSG_LOBBY_ANNOUNCE from %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(senderIP)));
@@ -464,9 +467,10 @@ void LANAPI::update()
 				break;
 
 				// Joining games
+			case LANMessage::MSG_REQUEST_JOIN_60HZ:
 			case LANMessage::MSG_REQUEST_JOIN:				// Let me in!  Let me in!
 				DEBUG_LOG(("LANAPI::update - got a MSG_REQUEST_JOIN from %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(senderIP)));
-				handleRequestJoin( msg, senderIP );
+				handleRequestJoin(msg, senderIP, msg->matchesSimulationProfile(m_transport->m_inBuffer[i].length));
 				break;
 			case LANMessage::MSG_JOIN_ACCEPT:					// Okay, you can join.
 				DEBUG_LOG(("LANAPI::update - got a MSG_JOIN_ACCEPT from %d.%d.%d.%d", PRINTF_IP_AS_4_INTS(senderIP)));
@@ -743,8 +747,17 @@ void LANAPI::RequestGameJoin( LANGameInfo *game, UnsignedInt ip /* = 0 */ )
 		return;
 	}
 
+	if (!game->hasCompatibleSimulation())
+	{
+		m_pendingAction = ACT_NONE;
+		m_expiration = 0;
+		m_directConnectRemoteIP = 0;
+		OnGameJoin(RET_SIMULATION_MISMATCH, nullptr);
+		return;
+	}
+
 	LANMessage msg;
-	msg.messageType = LANMessage::MSG_REQUEST_JOIN;
+	msg.messageType = LANMessage::localJoinRequest;
 	fillInLANMessage( &msg );
 	msg.GameToJoin.gameIP = game->getSlot(0)->getIP();
 	msg.GameToJoin.exeCRC = TheGlobalData->m_exeCRC;
@@ -1206,6 +1219,9 @@ void LANAPI::fillInLANMessage( LANMessage *msg )
 	CopyWcharToWindowsWideChar(msg->name, m_name.str(), ARRAY_SIZE(msg->name) - 1);
 	strlcpy(msg->userName, m_userName.str(), ARRAY_SIZE(msg->userName));
 	strlcpy(msg->hostName, m_hostName.str(), ARRAY_SIZE(msg->hostName));
+#ifdef RTS_EXPERIMENTAL_60HZ_SIMULATION
+	msg->simulationProfile = LANMessage::native60Profile;
+#endif
 }
 
 void LANAPI::RequestLobbyLeave( Bool forced )

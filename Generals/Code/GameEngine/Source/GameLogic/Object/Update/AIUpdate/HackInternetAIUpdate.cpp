@@ -199,7 +199,8 @@ UnsignedInt HackInternetAIUpdate::getPackTime() const
 // ------------------------------------------------------------------------------------------------
 UnsignedInt HackInternetAIUpdate::getCashUpdateDelay() const
 {
-	return getHackInternetAIUpdateModuleData()->m_cashUpdateDelay;
+	// GeneralsX @feature Codex 22/11/2026 The payout occupies a retail tick after the countdown reaches zero.
+	return getHackInternetAIUpdateModuleData()->m_cashUpdateDelay + (logicFramesFromBaseFrames(1) - 1);
 }
 
 // ------------------------------------------------------------------------------------------------

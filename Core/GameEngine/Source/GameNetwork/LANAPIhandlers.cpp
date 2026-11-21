@@ -140,7 +140,7 @@ void LANAPI::handleRequestLocations( LANMessage *msg, UnsignedInt senderIP )
 	OnNameChange(player->getIP(), player->getName());
 }
 
-void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
+void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP, Bool compatibleSimulation )
 {
 	/* 	fprintf(stderr, "[LAN86] handleGameAnnounce sender=%d.%d.%d.%d game=%ls inProgress=%d direct=%d\n",
 		PRINTF_IP_AS_4_INTS(senderIP), GetWindowsWideCharAsWchar(msg->GameInfo.gameName),
@@ -168,6 +168,7 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 				game->setName(UnicodeString(GetWindowsWideCharAsWchar(msg->GameInfo.gameName)));
 				addGame(game);
 			}
+			game->setCompatibleSimulation(compatibleSimulation);
 			Bool success = ParseGameOptionsString(game,AsciiString(msg->GameInfo.options));
 			game->setGameInProgress(msg->GameInfo.inProgress);
 			game->setIsDirectConnect(msg->GameInfo.isDirectConnect);
@@ -193,6 +194,7 @@ void LANAPI::handleGameAnnounce( LANMessage *msg, UnsignedInt senderIP )
 			game->setName(UnicodeString(GetWindowsWideCharAsWchar(msg->GameInfo.gameName)));
 			addGame(game);
 		}
+		game->setCompatibleSimulation(compatibleSimulation);
 		Bool success = ParseGameOptionsString(game,AsciiString(msg->GameInfo.options));
 		game->setGameInProgress(msg->GameInfo.inProgress);
 		game->setIsDirectConnect(msg->GameInfo.isDirectConnect);
@@ -320,7 +322,7 @@ static Bool ContainsAnyReadableChars(const WideChar* playerName)
 	return false;
 }
 
-void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
+void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP, Bool compatibleSimulation )
 {
 	UnsignedInt responseIP = senderIP;	// need this cause the player may or may not be
 																			// in the player list at the sendMessage.
@@ -354,6 +356,16 @@ void LANAPI::handleRequestJoin( LANMessage *msg, UnsignedInt senderIP )
 			/* 			fprintf(stderr, "[LAN86] handleRequestJoin deny sender=%d.%d.%d.%d reason=game-started responseIP=%d.%d.%d.%d\n",
 				PRINTF_IP_AS_4_INTS(senderIP), PRINTF_IP_AS_4_INTS(responseIP)); */
 			DEBUG_LOG(("LANAPI::handleRequestJoin - join denied because game already started."));
+		}
+		else if (!compatibleSimulation || msg->messageType != LANMessage::localJoinRequest)
+		{
+			reply.messageType = LANMessage::MSG_JOIN_DENY;
+			// Original clients understand the existing game-version mismatch reason.
+			reply.GameNotJoined.reason = msg->messageType == LANMessage::MSG_REQUEST_JOIN
+				? LANAPIInterface::RET_CRC_MISMATCH : LANAPIInterface::RET_SIMULATION_MISMATCH;
+			CopyWcharToWindowsWideChar(reply.GameNotJoined.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameNotJoined.gameName) - 1);
+			reply.GameNotJoined.gameIP = replyGameIP;
+			reply.GameNotJoined.playerIP = senderIP;
 		}
 		else
 		{

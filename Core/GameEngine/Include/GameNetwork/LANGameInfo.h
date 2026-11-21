@@ -88,6 +88,8 @@ public:
 
 	UnsignedInt getLastHeard() { return m_lastHeard; }
 	void setLastHeard( UnsignedInt lastHeard ) { m_lastHeard = lastHeard; }
+	Bool hasCompatibleSimulation() const { return m_compatibleSimulation; }
+	void setCompatibleSimulation(Bool compatible) { m_compatibleSimulation = compatible; }
 	LANGameInfo *getNext() { return m_next; }
 	void setNext( LANGameInfo *next ) { m_next = next; }
 
@@ -164,6 +166,7 @@ public:
 
 
 private:
+	Bool m_compatibleSimulation = false;
 	LANGameInfo *m_next;																///< Pointer for linked list
 	UnsignedInt m_lastHeard;														///< The last time we heard from this game (for timeout purposes)
 	UnicodeString m_gameName;														///< Game name.  @todo: are game names based off of host player names?

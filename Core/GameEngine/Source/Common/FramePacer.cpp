@@ -185,6 +185,17 @@ void FramePacer::setLogicTimeScaleFps( Int fps )
 	m_logicTimeScaleFPS = fps;
 }
 
+// GeneralsX @feature Codex 22/11/2026 Retain the native clock when the render cap changes during a match.
+void FramePacer::configureGameLogicRate(Int fps)
+{
+	setLogicTimeScaleFps(fps);
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	enableLogicTimeScale(TRUE);
+#else
+	enableLogicTimeScale(fps < getFramesPerSecondLimit());
+#endif
+}
+
 Int FramePacer::getLogicTimeScaleFps() const
 {
 	return m_logicTimeScaleFPS;

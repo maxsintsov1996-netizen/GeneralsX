@@ -72,7 +72,8 @@ const char *const TheAcademyClassificationTypeNames[] =
 };
 static_assert(ARRAY_SIZE(TheAcademyClassificationTypeNames) == ACT_COUNT + 1, "Incorrect array size");
 
-#define FRAMES_BETWEEN_UPDATES 30
+// GeneralsX @feature Codex 22/11/2026 Sample academy statistics once per game second.
+#define FRAMES_BETWEEN_UPDATES LOGICFRAMES_PER_SECOND
 
 
 //------------------------------------------------------------------------------------------------

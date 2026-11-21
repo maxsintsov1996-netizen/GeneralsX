@@ -134,7 +134,7 @@ UpdateSleepTime BaseRegenerateUpdate::update()
 	else
 	{
 		// we don't really need to heal every frame. do it every 3 frames or so.
-		const Int HEAL_RATE = 3;
+		const Int HEAL_RATE = logicFramesFromBaseFrames(3);
 
 		// do some healing
 		Real amount = HEAL_RATE * (body->getMaxHealth() * TheGlobalData->m_baseRegenHealthPercentPerSecond) /

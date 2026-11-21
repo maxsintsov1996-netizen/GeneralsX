@@ -214,7 +214,8 @@ void MissileAIUpdate::projectileFireAtObjectOrPosition( const Object *victim, co
 		Locomotor* curLoco = getCurLocomotor();
 		if (curLoco)
 		{
-			m_maxAccel = weaponSpeed;
+			// GeneralsX @feature Codex 22/11/2026 Reach launch speed over the original acceleration interval.
+			m_maxAccel = logicRateFromBaseRate(weaponSpeed);
 			curLoco->setMaxSpeed(weaponSpeed);
 			curLoco->setMaxAcceleration(m_maxAccel);
 		}
@@ -408,8 +409,8 @@ void MissileAIUpdate::doPrelaunchState()
 //-------------------------------------------------------------------------------------------------
 void MissileAIUpdate::doKillSelfState()
 {
-	if (m_stateTimestamp > TheGameLogic->getFrame()-3) {
-		// Hold in this state 2 frames to let the contrail catch up. jba.
+	if (m_stateTimestamp > TheGameLogic->getFrame() - logicFramesFromBaseFrames(3)) {
+		// Hold in this state for the original contrail delay to let the contrail catch up. jba.
 		return;
 	}
 	Object* obj = getObject();

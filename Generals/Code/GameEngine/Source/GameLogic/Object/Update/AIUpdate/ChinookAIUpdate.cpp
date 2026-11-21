@@ -671,7 +671,7 @@ public:
 			if (m_ropes[i].ropeDrawable)
 			{
 				const UnsignedInt ROPE_EXPIRATION_TIME = LOGICFRAMES_PER_SECOND * 5;
-				const Real initialSpeed = TheGlobalData->m_gravity * 30;	// give it a little kick
+				const Real initialSpeed = TheGlobalData->m_gravity * LOGICFRAMES_PER_SECONDS_REAL;	// give it a little kick
 				setRopeSpeed(m_ropes[i].ropeDrawable, initialSpeed, d->m_ropeDropSpeed, TheGlobalData->m_gravity);
 				m_ropes[i].ropeDrawable->setExpirationDate(now + ROPE_EXPIRATION_TIME);
 				m_ropes[i].ropeDrawable = nullptr; // we're done with it, so null it so we won't save it

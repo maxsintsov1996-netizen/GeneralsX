@@ -133,27 +133,30 @@ void FrameRateLimit::reset()
 
 
 // GeneralsX @doc These are the selectable RENDER frame-rate cap presets (the "FPS Limit"
-// option in the UI). This cap is NOT the simulation speed: game logic always advances at a
-// fixed LOGICFRAMES_PER_SECOND (30 Hz) regardless of the value chosen here. See FrameRateLimit::wait().
+// option in the UI). The configured simulation profile sets the native logic rate.
 //
 // IMPORTANT for input responsiveness: the main loop services input (SDL poll ->
 // GameClient::UPDATE message processing) exactly ONCE PER RENDER FRAME, and FramePacer::update()
 // then sleeps to hold this cap. Consequently the render FPS cap also sets how often the mouse is
 // sampled: a low cap (e.g. 30) makes mouse selection/dragging feel laggy and can make fast-moving
 // units hard to click, because input is only polled ~cap times/second -- while the simulation
-// still runs at 30 Hz either way. A higher cap (60/120/...) does not speed up the game; it only
+// advances on its own clock. A higher cap (60/120/...) does not speed up the game; it only
 // makes input more responsive. (Root cause of a long "mouse input is delayed" investigation.)
 const UnsignedInt RenderFpsPreset::s_fpsValues[] = {
-	30, 50, 56, 60, 65, 70, 72, 75, 80, 85, 90, 100, 110, 120, 144, 240, 480, UncappedFpsValue };
-
-// The lowest selectable cap (30) must not drop below the logic rate, or input/render would starve
-// the fixed-rate simulation.
-static_assert(LOGICFRAMES_PER_SECOND <= 30, "Min FPS values need to be revisited!");
+	// GeneralsX @feature Codex 22/11/2026 Offer render rates that can service every simulation tick.
+#if !defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	30, 50, 56,
+#endif
+	60, 65, 70, 72, 75, 80, 85, 90, 100, 110, 120, 144, 240, 480, UncappedFpsValue };
 
 UnsignedInt RenderFpsPreset::getNextFpsValue(UnsignedInt value)
 {
 	const Int first = 0;
 	const Int last = ARRAY_SIZE(s_fpsValues) - 1;
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	if (value < s_fpsValues[first])
+		return s_fpsValues[first];
+#endif
 	for (Int i = first; i < last; ++i)
 	{
 		if (value >= s_fpsValues[i] && value < s_fpsValues[i + 1])

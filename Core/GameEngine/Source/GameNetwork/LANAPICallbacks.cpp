@@ -79,6 +79,8 @@ UnicodeString LANAPIInterface::getErrorStringFromReturnType( ReturnType ret )
 			return TheGameText->fetch("LAN:ErrorGameFull");
 		case RET_DUPLICATE_NAME:
 			return TheGameText->fetch("LAN:ErrorDuplicateName");
+		case RET_SIMULATION_MISMATCH:
+			return TheGameText->FETCH_OR_SUBSTITUTE("LAN:SimulationRateMismatch", L"All players must use the same simulation rate (30 or 60 Hz).");
 		case RET_CRC_MISMATCH:
 			return TheGameText->fetch("LAN:ErrorCRCMismatch");
 		case RET_GAME_STARTED:

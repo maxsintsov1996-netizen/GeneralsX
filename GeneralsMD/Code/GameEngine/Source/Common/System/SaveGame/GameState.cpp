@@ -736,9 +736,9 @@ SaveCode GameState::loadGame( AvailableGameInfo gameInfo )
 	{
 		const Int tickRate = TheFramePacer->getLogicTimeScaleFps();
 		const Int maxFPS = TheFramePacer->getFramesPerSecondLimit();
-		TheFramePacer->enableLogicTimeScale(tickRate < maxFPS);
+		TheFramePacer->configureGameLogicRate(tickRate);
 		fprintf(stderr, "[SAVELOAD] Logic time scale re-evaluated after load: tick=%d Hz, render cap=%d FPS, scale=%s\n",
-			tickRate, maxFPS, (tickRate < maxFPS) ? "on" : "off");
+			tickRate, maxFPS, TheFramePacer->isLogicTimeScaleEnabled() ? "on" : "off");
 		fflush(stderr);
 	}
 
@@ -851,6 +851,10 @@ void GameState::loadQueuedSaveGame()
 AsciiString GameState::getSaveDirectory() const
 {
 	AsciiString tmp = TheGlobalData->getPath_UserData();
+	// GeneralsX @feature Codex 22/11/2026 Give frame-stamped 60 Hz saves their own directory.
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	tmp.concat("60Hz");
+#endif
 	// GeneralsX @bugfix copilot 12/03/2026 Use POSIX separator on non-Windows so saves are created inside a real Save directory.
 #ifdef _WIN32
 	tmp.concat("Save\\");
@@ -1737,9 +1741,18 @@ void GameState::xfer( Xfer *xfer )
 {
 
 	// version
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	// GeneralsX @feature Codex 22/11/2026 Stored deadlines and velocities use profile-specific simulation units.
+	XferVersion currentVersion = 0x60;
+#else
 	XferVersion currentVersion = 2;
+#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	if (version != currentVersion)
+		throw XFER_INVALID_VERSION;
+#endif
 
 	// get structure for our current game info
 	SaveGameInfo *saveGameInfo = getSaveGameInfo();

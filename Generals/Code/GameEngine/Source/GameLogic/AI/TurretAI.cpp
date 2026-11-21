@@ -185,8 +185,9 @@ void TurretStateMachine::loadPostProcess()
 //----------------------------------------------------------------------------------------------------------
 TurretAIData::TurretAIData()
 {
-	m_turnRate = DEFAULT_TURN_RATE;
-	m_pitchRate = DEFAULT_PITCH_RATE;
+	// GeneralsX @feature Codex 22/11/2026 Keep unconfigured turrets at their retail traverse speed.
+	m_turnRate = logicRateFromBaseRate(DEFAULT_TURN_RATE);
+	m_pitchRate = logicRateFromBaseRate(DEFAULT_PITCH_RATE);
 	m_naturalTurretAngle = 0.0f;
 	m_naturalTurretPitch = 0.0f;
 	for( Int slotIndex = 0; slotIndex < WEAPONSLOT_COUNT; ++slotIndex )
@@ -705,7 +706,7 @@ UpdateSleepTime TurretAI::updateTurretAI()
 		if (m_didFire)
 		{
 			// if we fired, enable sweeping for a few frames.
-			const Int ENABLE_SWEEP_FRAME_COUNT = 3;
+			const Int ENABLE_SWEEP_FRAME_COUNT = logicFramesFromBaseFrames(3);
 			m_enableSweepUntil = now + ENABLE_SWEEP_FRAME_COUNT;
 			m_continuousFireExpirationFrame = now + ENABLE_SWEEP_FRAME_COUNT;// so the recent firing will not interrupt the moving sound
 		}

@@ -89,7 +89,7 @@ SpectreGunshipUpdateModuleData::SpectreGunshipUpdateModuleData()
 /*************/  m_gunshipOrbitRadius           = 250.0f;
   m_strafingIncrement = 20.0f;
   m_orbitInsertionSlope = 0.7f;
-  m_howitzerFiringRate = 10;
+  m_howitzerFiringRate = logicFramesFromBaseFrames(10);
   m_howitzerFollowLag = 0;
   m_randomOffsetForHowitzer = 20.0f;
 }

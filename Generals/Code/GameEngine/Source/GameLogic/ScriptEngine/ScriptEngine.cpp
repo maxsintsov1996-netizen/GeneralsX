@@ -125,9 +125,10 @@ enum { K_SCRIPTS_DATA_VERSION_1 = 1 };
 enum { MAX_SPIN_COUNT = 20 };
 #define NONE_STRING "<none>"
 
-static const Int FRAMES_TO_SHOW_WIN_LOSE_MESSAGE = 120;
+// GeneralsX @feature Codex 22/11/2026 Keep WorldBuilder durations and the win/lose window in authored time.
+static const Int FRAMES_TO_SHOW_WIN_LOSE_MESSAGE = logicFramesFromBaseFrames(120);
 
-static const Int FRAMES_TO_FADE_IN_AT_START = 33;
+static const Int FRAMES_TO_FADE_IN_AT_START = logicFramesFromBaseFrames(33);
 
 
 //------------------------------------------------------------------------------ Performance Timers
@@ -4559,6 +4560,9 @@ void ScriptEngine::reset()
 		TheScriptConditions->reset();
 	}
 	m_numCounters = 1;
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	m_countdownHalfTick = FALSE;
+#endif
 	m_numAttackInfo = 1;
 	m_numFlags = 1;
 	m_endGameTimer = -1;
@@ -4716,6 +4720,9 @@ void ScriptEngine::reset()
 void ScriptEngine::newMap()
 {
 	m_numCounters = 1;
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	m_countdownHalfTick = FALSE;
+#endif
 	Int i;
 	for (i=0; i<MAX_COUNTERS; i++) {
 		m_counters[i].value = 0;
@@ -4839,6 +4846,12 @@ void ScriptEngine::update()
 		return; // we are just timing down
 	}
 
+	// GeneralsX @feature Codex 22/11/2026 WorldBuilder scripts run on the authored clock, including while world time is frozen.
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	m_countdownHalfTick = !m_countdownHalfTick;
+	if (!m_countdownHalfTick)
+		return;
+#endif
 	if (TheScriptActions) {
 		TheScriptActions->update();
 	}
@@ -4885,6 +4898,10 @@ void ScriptEngine::update()
 
 	// update all sequential stuff.
 	evaluateAndProgressAllSequentialScripts();
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	// GeneralsX @feature Codex 22/11/2026 Consume bridge events after the scripts have observed both native ticks.
+	TheTerrainLogic->clearBridgeScriptEvents();
+#endif
 
 	// Script debugger stuff
 	st_CurrentFrame++;
@@ -5692,9 +5709,9 @@ void ScriptEngine::setFade( ScriptAction *pAction )
 	m_curFadeFrame = 0;
 	m_minFade = pAction->getParameter(0)->getReal();
 	m_maxFade = pAction->getParameter(1)->getReal();
-	m_fadeFramesIncrease = pAction->getParameter(2)->getInt();
-	m_fadeFramesHold = pAction->getParameter(3)->getInt();
-	m_fadeFramesDecrease = pAction->getParameter(4)->getInt();
+	m_fadeFramesIncrease = logicFramesFromBaseFrames(pAction->getParameter(2)->getInt());
+	m_fadeFramesHold = logicFramesFromBaseFrames(pAction->getParameter(3)->getInt());
+	m_fadeFramesDecrease = logicFramesFromBaseFrames(pAction->getParameter(4)->getInt());
 	m_curFadeValue = m_minFade;
 	if( m_fadeFramesIncrease == 0 )
 	{
@@ -6045,7 +6062,7 @@ void ScriptEngine::setTimer( ScriptAction *pAction, Bool millisecondTimer, Bool 
 			Real randomValue = pAction->getParameter(2)->getReal();
 			value = GameLogicRandomValue(value, randomValue);
 		}
-		m_counters[counterNdx].value = REAL_TO_INT_CEIL(ConvertDurationFromMsecsToFrames(value*1000));
+		m_counters[counterNdx].value = REAL_TO_INT_CEIL(logicRateFromBaseRate(ConvertDurationFromMsecsToFrames(value*1000)));
 	} else {
 		Int value = pAction->getParameter(1)->getInt();
 		if (random) {
@@ -6102,7 +6119,7 @@ void ScriptEngine::adjustTimer( ScriptAction *pAction, Bool millisecondTimer, Bo
 		Real value = pAction->getParameter(0)->getReal();
 		if (!add)
 			value = -value;
-		m_counters[counterNdx].value += REAL_TO_INT_CEIL(ConvertDurationFromMsecsToFrames(value*1000));
+		m_counters[counterNdx].value += REAL_TO_INT_CEIL(logicRateFromBaseRate(ConvertDurationFromMsecsToFrames(value*1000)));
 	} else {
 		Int value = pAction->getParameter(0)->getInt();
 		if (!add)
@@ -8165,6 +8182,7 @@ void ScriptEngine::setGlobalDifficulty( GameDifficulty difficulty )
 	* 4: current music track info
 	* 5: add ChooseVictimAlwaysUsesNormal
 	* 6: TheSuperHackers @tweak Serialize m_letterBoxActive
+	* 7: Preserve the fractional script timer tick in native 60 Hz saves.
 	*/
 // ------------------------------------------------------------------------------------------------
 void ScriptEngine::xfer( Xfer *xfer )
@@ -8172,7 +8190,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 	Int i;
 
 	// version
-#if RETAIL_COMPATIBLE_XFER_SAVE
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	const XferVersion currentVersion = 7;
+#elif RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 5;
 #else
 	const XferVersion currentVersion = 6;
@@ -8646,6 +8666,13 @@ void ScriptEngine::xfer( Xfer *xfer )
 			m_letterBoxActive = FALSE;
 		}
 	}
+
+#if defined(RTS_EXPERIMENTAL_60HZ_SIMULATION)
+	if (version >= 7)
+		xfer->xferBool(&m_countdownHalfTick);
+	else
+		m_countdownHalfTick = FALSE;
+#endif
 
 	if( xfer->getXferMode() == XFER_LOAD ) {
 		// We are doing a load.  If there is no fade active, do a black fade in to start.

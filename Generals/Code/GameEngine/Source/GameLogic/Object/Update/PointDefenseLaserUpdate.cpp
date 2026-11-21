@@ -120,6 +120,9 @@ void PointDefenseLaserUpdate::onObjectCreated()
 //-------------------------------------------------------------------------------------------------
 /** The update callback. */
 //-------------------------------------------------------------------------------------------------
+// GeneralsX @feature Codex 22/11/2026 The scan or shot itself occupies the last tick after its countdown.
+static constexpr Int extraCountdownTicks = logicFramesFromBaseFrames(1) - 1;
+
 UpdateSleepTime PointDefenseLaserUpdate::update()
 {
 /// @todo srj use SLEEPY_UPDATE here
@@ -143,7 +146,7 @@ UpdateSleepTime PointDefenseLaserUpdate::update()
 		fireWhenReady(); //Only happens if something is tracked.
 		return UPDATE_SLEEP_NONE;
 	}
-	m_nextScanFrames = data->m_scanFrames;
+	m_nextScanFrames = data->m_scanFrames + extraCountdownTicks;
 
 	//Periodic scanning (expensive)
 	if( scanClosestTarget() )
@@ -179,12 +182,12 @@ void PointDefenseLaserUpdate::fireWhenReady()
 			{
 				//We were in range last frame, but the target has moved out of firing range, so
 				//re-evaluate by forcing a new scan.
-				m_nextScanFrames = GameLogicRandomValue( 0, 3 );
+				m_nextScanFrames = logicFramesFromBaseFrames(GameLogicRandomValue(0, 3));
 				m_bestTargetID = INVALID_ID;
 				if( !m_nextScanFrames )
 				{
 					scanClosestTarget();
-					m_nextScanFrames = data->m_scanFrames;
+					m_nextScanFrames = data->m_scanFrames + extraCountdownTicks;
 					target = nullptr; //Set target to nullptr so we don't shoot at it (might be out of range)
 				}
 			}
@@ -219,17 +222,17 @@ void PointDefenseLaserUpdate::fireWhenReady()
 				deleteInstance(w);
 
 				// And now that we have shot, set our internal reload timer.
-				m_nextShotAvailableInFrames = wt->getDelayBetweenShots( bonus );
+				m_nextShotAvailableInFrames = wt->getDelayBetweenShots(bonus) + extraCountdownTicks;
 			}
 
 			if( target->isEffectivelyDead() )
 			{
-				m_nextScanFrames = GameLogicRandomValue( 0, 3 );
+				m_nextScanFrames = logicFramesFromBaseFrames(GameLogicRandomValue(0, 3));
 				m_bestTargetID = INVALID_ID;
 				if( !m_nextScanFrames )
 				{
 					scanClosestTarget();
-					m_nextScanFrames = data->m_scanFrames;
+					m_nextScanFrames = data->m_scanFrames + extraCountdownTicks;
 				}
 			}
 		}

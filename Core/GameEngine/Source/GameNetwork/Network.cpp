@@ -334,8 +334,9 @@ void Network::init()
 	m_conMgr->init();
 
 	m_lastFrame = 0;
-	m_runAhead = min(max(30, MIN_RUNAHEAD), MAX_FRAMES_AHEAD/2); ///< @todo: don't hard-code the run-ahead.
-	m_frameRate = 30;
+	// GeneralsX @feature Codex 22/11/2026 Start all peers with the same one-second command horizon and tick rate.
+	m_frameRate = LOGICFRAMES_PER_SECOND;
+	m_runAhead = clamp<Int>(MIN_RUNAHEAD, m_frameRate, MAX_FRAMES_AHEAD / 2);
 	m_lastExecutionFrame = m_runAhead - 1; // subtract 1 since we're starting on frame 0
 	m_lastFrameCompleted = m_runAhead - 1; // subtract 1 since we're starting on frame 0
 	m_frameDataReady = FALSE;

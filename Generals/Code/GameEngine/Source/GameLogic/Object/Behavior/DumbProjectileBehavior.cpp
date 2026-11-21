@@ -378,9 +378,10 @@ void DumbProjectileBehavior::projectileFireAtObjectOrPosition( const Object *vic
  	PhysicsBehavior* physics = projectile->getPhysics();
  	if ( d->m_tumbleRandomly && physics)
 	{
-		physics->setPitchRate( GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI ) );
-		physics->setYawRate( GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI ) );
-		physics->setRollRate( GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI ) );
+		// GeneralsX @feature Codex 22/11/2026 Preserve projectile spin per second at the native step size.
+		physics->setPitchRate( logicRateFromBaseRate(GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI )) );
+		physics->setYawRate( logicRateFromBaseRate(GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI )) );
+		physics->setRollRate( logicRateFromBaseRate(GameLogicRandomValueReal( -1.0f/PI, 1.0f/PI )) );
 	}
 
 	m_flightPathStart = *getObject()->getPosition();

@@ -301,9 +301,8 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 		TheRecorder->stopPlayback();
 	}
 	// GeneralsX @feature felipebraz 17/09/2026 Reset simulation tick rate and FPS cap to global defaults (#281)
-	TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
 	TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
-	TheFramePacer->enableLogicTimeScale(LOGICFRAMES_PER_SECOND < TheGlobalData->m_framesPerSecondLimit);
+	TheFramePacer->configureGameLogicRate(LOGICFRAMES_PER_SECOND);
 //	m_background->bringForward();
 //	if(shellGame)
 
@@ -924,16 +923,14 @@ bool GameLogic::onNewGame(MAYBE_UNUSED GameMessage *msg)
 			TheFramePacer->setFramesPerSecondLimit(tickRate);
 		}
 
-		TheFramePacer->setLogicTimeScaleFps(tickRate);
-		TheFramePacer->enableLogicTimeScale(tickRate < TheFramePacer->getFramesPerSecondLimit());
+		TheFramePacer->configureGameLogicRate(tickRate);
 
 		fprintf(stderr, "[SKIRMISH] Simulation tick rate configured: %d Hz (base: %d Hz)\n", tickRate, LOGICFRAMES_PER_SECOND);
 		fflush(stderr);
 	}
 	else
 	{
-		TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
-		TheFramePacer->enableLogicTimeScale(LOGICFRAMES_PER_SECOND < TheFramePacer->getFramesPerSecondLimit());
+		TheFramePacer->configureGameLogicRate(LOGICFRAMES_PER_SECOND);
 	}
 
 	// prepare for new game
